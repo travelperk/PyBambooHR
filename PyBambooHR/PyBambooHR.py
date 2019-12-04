@@ -314,7 +314,7 @@ class PyBambooHR(object):
 
         if field_list:
             for f in field_list:
-                if not self.employee_fields.get(f):
+                if not f.startswith("custom") and not f.isdigit() and not self.employee_fields.get(f):
                     raise UserWarning("You passed in an invalid field")
                 else:
                     get_fields.append(f)
@@ -326,7 +326,7 @@ class PyBambooHR(object):
             'fields': ",".join(get_fields)
         }
 
-        if self.only_current == False:
+        if self.only_current is False:
             payload.update({
                 'onlyCurrent': 'false'
             })
@@ -529,7 +529,7 @@ class PyBambooHR(object):
         field_list = [utils.underscore_to_camelcase(field) for field in field_list] if field_list else None
         if field_list:
             for f in field_list:
-                if not f.startswith('custom') and not self.employee_fields.get(f):
+                if not f.startswith("custom") and not f.isdigit() and not self.employee_fields.get(f):
                     raise UserWarning("You passed in an invalid field")
                 else:
                     get_fields.append(f)
