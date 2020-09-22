@@ -11,11 +11,16 @@ to BambooHR API calls defined at http://www.bamboohr.com/api/documentation/.
 """
 
 import datetime
+import logging
+
 import requests
 from . import utils
 from . import config
 from .utils import make_field_xml
 from os.path import basename
+
+
+logger = logging.getLogger(__name__)
 
 # Python 3 basestring compatibility:
 try:
@@ -533,8 +538,16 @@ class PyBambooHR(object):
             get_fields, title=title, report_format=report_format,
             last_changed=last_changed)
         url = self.base_url + "reports/custom/?format={0}".format(report_format)
-        r = requests.post(url, timeout=self.timeout, data=xml, headers=self.headers, auth=(self.api_key, ''))
-        r.raise_for_status()
+        r = requests.post(url, timeout=self.timeout, data=xml, headers=self.headers, auth=(self.api_key, ""))
+        try:
+            r.raise_for_status()
+        except Exception as e:
+            msg = "request failed"
+            reason_header = r.headers.get("X-BambooHR-Error-Message")
+            if reason_header:
+                msg = f"{msg}, BambooHR error message: {reason_header}"
+            logger.warning(msg)
+            raise e
 
         if report_format == 'json':
             # return list/dict for json type
